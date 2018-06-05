@@ -1,0 +1,70 @@
+.App
+  text-align: center
+.main-page
+	height: 100%
+	position: relative
+
+/* @TODO Export this */
+
+.song
+	border: 1px solid #000
+	width: 300px
+	margin: 10px
+	padding: 10px
+	cursor: pointer
+	&-name
+		text-align: left
+		display: inline-block
+	.button
+		width: 20px
+		height: 20px
+		background-size: cover
+		display: inline-block
+		vertical-align: top
+		margin-left: 20px
+.button-next
+	background-image: url("./assets/forward.svg")
+.button-back
+	background-image: url("./assets/backward.svg")
+.button-play
+	background-image: url("./assets/play.svg")
+.button-pause
+	background-image: url("./assets/pause.svg")
+.song-active
+	border: 1px solid #00ff00
+.player
+	background-color: #eee
+	position: fixed
+	bottom: 0
+	height: 60px
+	left: 0
+	width: 100%
+	.player__progress-bar
+		height: 10px
+		width: 100%
+		background-color: #eee
+		.progress
+			width: 0
+			height: 10px
+			left: 0
+			top: 0
+			background-color: transparent
+			position: absolute
+	.player__progress-bar-active
+		background-color: #ddd
+		.progress
+			background-color: #829301
+	&-button
+		margin-right: 10px
+		text-align: center
+		display: inline-block
+		cursor: pointer
+		width: 24px
+		height: 24px
+		background-size: cover
+		opacity: 0.3
+.player-active
+	.player-button
+		opacity: 1
+
+		

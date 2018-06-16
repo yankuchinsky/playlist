@@ -39,21 +39,36 @@
 	height: 60px
 	left: 0
 	width: 100%
-	.player__progress-bar
+	&-buttons
+		width: 200px
+		display: inline-block
+	&-volume
+		width: 200px
+		height: 10px
+		border: 1px solid #999
+		position: absolute
+		top: 30px
+		right: 10px
+
+	.progress-bar
 		height: 10px
 		width: 100%
-		background-color: #eee
+		background-color: #ddd
 		.progress
 			width: 0
 			height: 10px
 			left: 0
 			top: 0
-			background-color: transparent
 			position: absolute
-	.player__progress-bar-active
-		background-color: #ddd
+			background-color: transparent //#829301
+	.volume-progress-bar
+		position: absolute
+		top: 20px
+		right: 10px
+		width: 200px
+		height: 10px
 		.progress
-			background-color: #829301
+			width: 200px
 	&-button
 		margin-right: 10px
 		text-align: center
@@ -63,7 +78,13 @@
 		height: 24px
 		background-size: cover
 		opacity: 0.3
+
+
 .player-active
+	.progress-bar
+		background-color: #666
+		.progress
+			background-color: #829301
 	.player-button
 		opacity: 1
 

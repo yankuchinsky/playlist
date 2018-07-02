@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
+import User from '../Components/User'
 import {Songs} from '../api'
+
 
 const SONG_PROGRESS = '.song-progress-bar.progress-bar > .progress';
 const SONG_AUDIO = '.song-audio';
@@ -71,7 +73,6 @@ class MainPage extends Component {
 		}
 	}
 	changeProgrees = (e) => {
-		console.log('progress changed');
 		let audio = document.querySelector(SONG_AUDIO);
 		const playerBar = document.querySelector(SONG_PROGRESS);
 		const x = e.clientX;
@@ -81,12 +82,14 @@ class MainPage extends Component {
 		const val = audioPercent * progress;
 		console.log(val);
 		audio.currentTime = val;
+		clearInterval(this.state.timer);
 		if(this.state.play){
 			this.setState({
 				currentTime: val,
 				timer: this.createTimer(audio, playerBar)
 			});
 		}else{
+			
 			let time = (audio.currentTime / audio.duration) * 100;
 			playerBar.style.width =  time + "%";
 			this.setState({
@@ -140,6 +143,7 @@ class MainPage extends Component {
 		const playerButton = !this.state.play ? 'button-play' : 'button-pause';
 		return(
 			<div className="main-page">
+				<User/>
 				{songs}
 				<div className={"player " + playerActive}>
 					<div onClick={(e) => this.changeProgrees(e)} className="song-progress-bar progress-bar">

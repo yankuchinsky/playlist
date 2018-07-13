@@ -8,25 +8,27 @@ const SONG_AUDIO = '.song-audio';
 const VOLUME = '.volume-progress-bar.progress-bar';
 const VOLUME_PROGRESS =  '.volume-progress-bar.progress-bar > .progress';
 
+let AUDIO, PLAYER_BAR, VOLUME_SELECTOR, VOLUME_PROGRESS_SELECTOR = null;
 
 class MainPage extends Component {
+
 	state = {
 		songs: [],
 		loaded: false,
 		currentPlay: '',
 		play: false,
 		currentTime: 0,
-		audio: null,
-		playerBar: null,
-		timer: null
+		timer: null,
+		volume: 100
 	}
-	handleSong = (id) => {
-		const audio = document.querySelector(SONG_AUDIO);
-		const playerBar = document.querySelector(SONG_PROGRESS);
-		if(audio){ 
+	// constructor(props){
+	// 	super(props);
+	// }
+	handleSong = id => {
+		if(AUDIO){ 
+			clearInterval(this.state.timer);
 			if(this.state.play && this.state.currentPlay === id){
-				audio.pause();
-				clearInterval(this.state.timer);
+				AUDIO.pause();
 				this.setState({
 					play: false,
 					timer: null
@@ -37,88 +39,98 @@ class MainPage extends Component {
 					play: true
 				}, () => {
 					this.setState({
-						timer: this.createTimer(audio, playerBar)
+						timer: this.createTimer(AUDIO, PLAYER_BAR)
 					});
-					audio.play()
+					AUDIO.play()
 				});
 			}
 		}
 	}
 	handlePlay = () => {
-		const audio = document.querySelector(SONG_AUDIO);
-		if(audio){
+		clearInterval(this.state.timer);
+		if(AUDIO){
 			if(this.state.play && this.state.currentPlay){
 				this.setState({
 					play: false,
 					timer: null
-				}, () => audio.pause());
+				}, () => AUDIO.pause());
 			}else{
+				clearInterval(this.state.timer);
 				this.setState({
 					play: true
-				}, () => audio.play());
+				}, () => AUDIO.play());
 			}
 		}
 	}
-	changeVolume = (e) => {
+	changeVolume = event  => {
 		if(this.state.currentPlay){
-			const volumeBar = document.querySelector(VOLUME);
-			const volumeProgress = document.querySelector(VOLUME_PROGRESS);
-			const audio = document.querySelector(SONG_AUDIO);
-			const volumeBarPosition = e.target.getBoundingClientRect();
-			const clientClickPosition = e.clientX
+			const volumeBarPosition = event.target.getBoundingClientRect();
+			const clientClickPosition = event.clientX
 			const positionInside = clientClickPosition - volumeBarPosition.x.toFixed(0);
-			const volume = positionInside / volumeBar.clientWidth;
-			volumeProgress.style.width = positionInside + 'px'; 
-			audio.volume = volume;
+			const volume = positionInside / VOLUME_SELECTOR.clientWidth;
+			VOLUME_PROGRESS_SELECTOR.style.width = positionInside + 'px'; 
+			AUDIO.volume = volume;
 		}
 	}
-	changeProgrees = (e) => {
-		let audio = document.querySelector(SONG_AUDIO);
-		const playerBar = document.querySelector(SONG_PROGRESS);
-		const x = e.clientX;
+	setVolume = value => {
+			AUDIO.volume = value/100;
+			const audioPercent = VOLUME_SELECTOR.clientWidth/100
+			VOLUME_PROGRESS_SELECTOR.style.width = audioPercent*value + 'px'; 
+	}
+	changeProgress = event => {
+		const x = event.clientX;
 		const width = document.documentElement.clientWidth; //document.body.clientWidth;
 		const progress = x / width * 100;
-		const audioPercent = audio.duration / 100;
+		const audioPercent = AUDIO.duration / 100;
 		const val = audioPercent * progress;
-		console.log(val);
-		audio.currentTime = val;
-		clearInterval(this.state.timer);
+		AUDIO.currentTime = val;
 		if(this.state.play){
 			this.setState({
-				currentTime: val,
-				timer: this.createTimer(audio, playerBar)
+				currentTime: val
 			});
 		}else{
-			
-			let time = (audio.currentTime / audio.duration) * 100;
-			playerBar.style.width =  time + "%";
+			let time = (AUDIO.currentTime / AUDIO.duration) * 100;
+			PLAYER_BAR.style.width =  time + "%";
 			this.setState({
 				currentTime: val
 			})
 		}
 	}
-	changeSong = (song) => {
-		const audio = document.querySelector('.song-audio');
-		const currentPlay = this.state.songs[song]
+	changeSong = song => () => {
+		const currentPlay = this.state.songs[song];
+		clearInterval(this.state.timer);
 		this.setState({
 			currentPlay: currentPlay.id,
 			play: true,
-			currentTime: 0,
-		}, () => audio.play());
+			timer: this.createTimer()
+		}, () => AUDIO.play());
 	} 
-	createTimer = (audio, playerBar) => setInterval(() => {
-		let time = (audio.currentTime / audio.duration) * 100;
+	createTimer = () =>
+	{
+		const interval = setInterval(() => {
+			let time = (AUDIO.currentTime / AUDIO.duration) * 100;
 			this.setState({
-					currentTime: time,
+				currentTime: time,
 			});
-			playerBar.style.width =  time + "%";
+			PLAYER_BAR.style.width =  time + "%";
+			console.log('____ ', this.state.currentPlay);
 		}, 200);
+		return interval;
+	}
+	componentDidMount(){
+		AUDIO = document.querySelector(SONG_AUDIO);
+		PLAYER_BAR = document.querySelector(SONG_PROGRESS);
+		VOLUME_SELECTOR = document.querySelector(VOLUME);
+		VOLUME_PROGRESS_SELECTOR = document.querySelector(VOLUME_PROGRESS);
+		this.setVolume(10);
+	}
 	async componentWillMount(){
 		const response = await Songs.getSongs()
 		this.setState({
 			songs: response.data.songs,
 			loaded: true
 		});
+		
 	}
 	
 	render(){
@@ -139,14 +151,13 @@ class MainPage extends Component {
 		const currentIndex = this.state.songs.indexOf(currentPlay);
 		const currentPlayName = currentPlay ? currentPlay.song_name : '';
 		const playerActive = this.state.currentPlay ? 'player-active' : '';
-		const progressBarStatus = currentPlay ? 'player__progress-bar-active' : '';
 		const playerButton = !this.state.play ? 'button-play' : 'button-pause';
 		return(
 			<div className="main-page">
 				<User/>
 				{songs}
 				<div className={"player " + playerActive}>
-					<div onClick={(e) => this.changeProgrees(e)} className="song-progress-bar progress-bar">
+					<div onClick={this.changeProgress} className="song-progress-bar progress-bar">
 						<div className="progress">
 						</div>
 					</div>
@@ -154,14 +165,14 @@ class MainPage extends Component {
 						{currentPlayName}
 					</div>
 					<div className="player-buttons">
-						<div className="player-button button-back"  onClick={() => this.changeSong(currentIndex - 1)}>
+						<div className="player-button button-back"  onClick={this.changeSong(currentIndex - 1)}>
 						</div>
 						<div className={"player-button " + playerButton} onClick={this.handlePlay}>
 						</div>
-						<div className="player-button button-next" onClick={() => this.changeSong(currentIndex + 1)}>
+						<div className="player-button button-next" onClick={this.changeSong(currentIndex + 1)}>
 						</div>
 					</div>
-					<div className="volume-progress-bar progress-bar" onClick={(e) => this.changeVolume(e)}>
+					<div className="volume-progress-bar progress-bar" onClick={this.changeVolume}>
 						<div className="progress"></div>
 					</div>
 					<audio className ="song-audio" src={ this.state.currentPlay ? "http://127.0.0.1:5000/file/" + this.state.currentPlay : ''} ></audio>
